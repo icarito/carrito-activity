@@ -3,6 +3,7 @@ import spyral.debug
 import pygame
 from random import randint, random
 
+
 def reset():
     scene = spyral.director.get_scene()
     for sprite in scene._sprites.copy():
@@ -14,59 +15,12 @@ def fps():
     scene.fps = spyral.debug.FPSSprite(scene, (255,0,0))
 
 
-
-class RetroTexto(spyral.Sprite):
-    def __init__(self, texto):
-        scene = spyral.director.get_scene()
-        spyral.Sprite.__init__(self, scene)
-        self.image = spyral.Image("images/minivintage-frame.png")
-
-        font_path = "fonts/LiberationSans-Regular.ttf"
-        self.font = spyral.Font(font_path, 24, (0,0,0))
-        self.line_height = self.font.linesize
-
-        self.image.draw_image(self.render_text(texto), 
-                                position=(0, 0),
-                                anchor="midleft")
-
-    def render_text(self, text):
-        text_width = self.font.get_size(text)[0]
-
-        ancho_promedio = self.font.get_size("X")[0]
-        caracteres = self.width / ancho_promedio
-        lineas = self.wrap(text, caracteres).splitlines()
-
-        altura = len(lineas) * self.line_height
-        bloque = spyral.Image(size=(self.width, altura))
-
-        ln = 0
-        for linea in lineas:
-            bloque.draw_image(image=self.font.render(linea),
-                                position=(0, ln * self.line_height),
-                                anchor="midtop")
-            ln = ln + 1
-        return bloque
-       
-
-    def wrap(self, text, length):
-        """ Sirve para cortar texto en varias lineas """
-        words = text.split()
-        lines = []
-        line = ''
-        for w in words:
-            if len(w) + len(line) > length:
-                lines.append(line)
-                line = ''
-            line = line + w + ' '
-            if w is words[-1]: lines.append(line)
-        return '\n'.join(lines)
-
-class Gato(spyral.Sprite):
+class Carrito(spyral.Sprite):
     def __init__(self, scene):
         spyral.Sprite.__init__(self, scene)
-        self.image = spyral.Image("images/mati2.png")
+        self.image = spyral.Image("images/etoys-car.png")
         self.vel = 100 
-        self.scale = 3
+        self.scale = 1 
         self.x, self.y = 100, 100
         self.anchor = "midbottom"
 
@@ -120,7 +74,7 @@ class Mono(spyral.Sprite):
         
 
 class Juego(spyral.Scene):
-    def __init__(self, activity=None, *args, **kwargs):
+    def __init__(self, activity=None, SIZE=None, *args, **kwargs):
         spyral.Scene.__init__(self, SIZE)
         self.background = spyral.Image(size=SIZE).fill((255,255,255))
         

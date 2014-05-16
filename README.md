@@ -27,10 +27,14 @@ Content:
 
 Credits of assets:
 
+    Switch designed by John Caserta from the Noun Project
+    Light Switch designed by Nadir Balcikli from the Noun Project
+    Lever designed by Nick Abrams from the Noun Project
     Man by Sergi Delgado from The Noun Project
     Cat designed by Martin LEBRETON from the Noun Project
     Paw designed by Ben Hsu from the Noun Project
     Creative Commons – Attribution (CC BY 3.0)
+    Creative Commons – Attribution (CC BY 3.0) 
     
 Graphics from Wikipedia
 http://en.wikipedia.org/wiki/File:Hangman-0.png set done by User:Demi on English Wikipedia

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import spyral
 import spyral.debug
 import pygame

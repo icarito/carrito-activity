@@ -20,20 +20,25 @@ from sugar.activity.widgets import ActivityToolbarButton
 from sugar.graphics.toolbutton import ToolButton
 from sugar.graphics.radiotoolbutton import RadioToolButton
 from sugar.activity.widgets import StopButton
+from sugar.graphics.alert import NotifyAlert
 
-from terminal.interactiveconsole import GTKInterpreterConsole
-from pyvimwrapper.vimWrapper import VimWrapper
+from libraries.console.interactiveconsole import GTKInterpreterConsole
+from libraries.pyvimwrapper.vimWrapper import VimWrapper
 try:
     import gtksourceview2
 except ImportError:
     import platform
     if platform.machine()=='armv7l':
         from libraries.armv7l import gtksourceview2
+    elif platform.machine()=='i686':
+        from libraries.i686 import gtksourceview2
+    else:
+        gtksourceview2 = None
 from pango import FontDescription
 
-import game.neko
+import game.carrito
 
-JUEGO=game.neko
+JUEGO=game.carrito
 
 class Activity(sugar.activity.activity.Activity):
     def __init__(self, handle):
@@ -74,6 +79,7 @@ class Activity(sugar.activity.activity.Activity):
         gobject.timeout_add(300, self.pump)
         gobject.timeout_add(2000, self.init_interpreter)
         gobject.timeout_add(1000, self.build_editor)
+        gobject.timeout_add(1500, self.check_modified)
 
         self.build_toolbar()    
         self._pygamecanvas.run_pygame(self.run_game)
@@ -82,6 +88,25 @@ class Activity(sugar.activity.activity.Activity):
         scene = spyral.director.get_scene()
         if scene:
             scene.redraw()
+
+    def alert(self, title=None, text=None):
+        alert = NotifyAlert(5)
+        alert.props.title = title
+        alert.props.msg = text
+        self.add_alert(alert)
+        alert.connect('response', self._alert_ok)
+        alert.show()
+
+    def _alert_ok(self, alert, *args):
+        self.remove_alert(alert)
+
+    def check_modified(self):
+        if self.box.current_page()==2:
+            if not self.save_button.get_sensitive():
+                if self.editor.modificado():
+                    self.save_button.set_sensitive(True)
+                    return False
+        return True
 
     def pump(self):
         # Esto es necesario porque sino pygame acumula demasiados eventos.
@@ -104,7 +129,12 @@ class Activity(sugar.activity.activity.Activity):
                 self.editor.open_file(widget, path)
 
     def save_file(self, widget):
-        self.editor.save_file()
+        if self.editor.modificado():
+            self.save_button.set_sensitive(False)
+            self.editor.save_file()
+            filename = self.editor.current_file()
+            self.alert(filename, "Archivo guardado.")
+            gobject.timeout_add(1500, self.check_modified)
 
     def build_editor(self):
         dir_real = os.getcwd()
@@ -119,7 +149,7 @@ class Activity(sugar.activity.activity.Activity):
         self.h.pack1(self.tree)
         self.box.append_page(self.h, gtk.Label("Editor"))
 
-        if False:
+        if True:
             self.socket = gtk.Socket()
             self.socket.show()
             self.h.pack2(self.socket)
@@ -190,6 +220,7 @@ class Activity(sugar.activity.activity.Activity):
         self.save_button.set_tooltip(_('Guardar'))
         self.save_button.accelerator = "<Ctrl>s"
         self.save_button.connect('clicked', self.save_file)
+        self.save_button.set_sensitive(False)
         toolbar_box.toolbar.insert(self.save_button, -1)
         self.save_button.show()
 
@@ -221,9 +252,11 @@ class Activity(sugar.activity.activity.Activity):
 
     def show_game(self, widget):
         self.box.set_page(1)
+        self.redraw()
 
     def show_editor(self, widget):
         self.box.set_page(2)
+        self.redraw()
 
     def restart_game(self, widget):
         global JUEGO
@@ -370,6 +403,11 @@ class VimSourceView(VimWrapper):
         if path:
             if not os.path.isdir(path):
                 self.sendKeys(":e %s<CR>" % path)
+                self.fix_fonts()
+
+    def fix_fonts(self):
+        font = "Monospace\\ " + str(int(10/style.ZOOM_FACTOR))
+        self.sendKeys(":set guifont=%s<CR>" % font)
 
     def save_file(self):
         self.sendKeys(":w<CR>")
@@ -379,6 +417,13 @@ class VimSourceView(VimWrapper):
         if event=="killed":
             self.close()
 
+    def modificado(self):
+        return self.isBufferModified(-1)
+
+    def current_file(self):
+        cur_buf = self.getBufId()
+        filename = self.bufInfo.pathOfBufId(cur_buf)
+        return filename
 
 class SourceView(gtksourceview2.View):
     """
@@ -475,6 +520,12 @@ class SourceView(gtksourceview2.View):
 
                 buffer.set_modified(False)
                 self.control = os.path.getmtime(self.archivo)
+
+    def modificado(self):
+        return self.get_buffer().get_modified()
+
+    def current_file(self):
+        return os.path.realpath(self.archivo)
 
 def main():
     spyral.director.init((0,0), fullscreen = False, max_fps = 30)

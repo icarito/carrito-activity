@@ -25,7 +25,7 @@ syntax on
 " colorscheme inkpot
 colo desert 
 
-set guifont=Terminus\ 14
+" set guifont=Terminus\ 14
 
 if has("autocmd")
   au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")

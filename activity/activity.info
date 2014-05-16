@@ -1,6 +1,6 @@
 [Activity]
-name = Neko
+name = Carrito
 activity_version = 1
-bundle_id = org.somosazucar.Neko
-icon = pata
+bundle_id = org.somosazucar.Carrito
+icon = activity
 exec = sugar-activity activity.Activity

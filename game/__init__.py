@@ -1,5 +1,5 @@
 import spyral
-import neko
+import carrito 
 
 def main(activity=None):
-    spyral.director.push(neko.Juego(activity))
+    spyral.director.push(carrito.Juego(activity))
