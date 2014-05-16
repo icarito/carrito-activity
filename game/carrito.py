@@ -4,6 +4,7 @@ import spyral.debug
 import pygame
 import math
 import random
+pygame.mixer.init()
 
 class Interruptor(spyral.Sprite):
     def __init__(self, scene, player):
@@ -54,6 +55,8 @@ class Carrito(spyral.Sprite):
         self.girando = False
         self.moviendo = False
         self.frenando = False
+
+        self.bonus = pygame.mixer.Sound('sounds/BonusCube_0.ogg')
 
         self.puntos = 4
         self.player = player
@@ -144,10 +147,19 @@ class Carrito(spyral.Sprite):
             self.frenando = False
 
     def chequea_choque(self, event):
+        if self.x > self.scene.width:
+            self.x = 0
+        if self.y > self.scene.height:
+            self.y = 0
+        if self.x < 0:
+            self.x = self.scene.width
+        if self.y < 0:
+            self.y = self.scene.height
         for i in self.scene.i:
             if self.collide_sprite(i):
                 if not i.player==self.player:
                     spyral.event.queue("carrito.choca", spyral.Event(sprite=i, player=self.player))
+                    self.bonus.play()
 
 
 class Juego(spyral.Scene):
@@ -160,12 +172,15 @@ class Juego(spyral.Scene):
         self.rojo = Carrito(self, 1)
         self.verde = Carrito(self, 2)
 
+        self.boom = pygame.mixer.Sound('sounds/punch.wav')
+
         self.i = []
         for i in range(0,4):
             self.i.append(Interruptor(self, 1))
         for i in range(0,4):
             self.i.append(Interruptor(self, 2))
 
+        spyral.event.register("director.update", self.chequea_choque)
         spyral.event.register("system.quit", spyral.director.pop)
         spyral.event.register("carrito.choca", self.puntaje)
         spyral.event.register("carrito.gana", self.fin)
@@ -175,6 +190,12 @@ class Juego(spyral.Scene):
             activity._pygamecanvas.grab_focus()
             activity.window.set_cursor(None)
             self.activity = activity
+
+    def chequea_choque(self):
+        if self.verde.collide_sprite(self.rojo):
+            self.boom.play()
+            self.verde.vel = 0
+            self.rojo.vel = 0
 
     def puntaje(self, sprite, player):
         puntaje1, puntaje2 = 0, 0
@@ -205,6 +226,9 @@ class Final(spyral.Scene):
         self.player.vel = 0
         self.player.scale = 3
         self.i = []
+
+        self.aplauso = pygame.mixer.Sound('sounds/applause.wav')
+        self.aplauso.play()
 
         anim = spyral.Animation("scale", spyral.easing.Sine(1), shift=2)
         self.player.animate(anim + anim + anim + anim + anim)
