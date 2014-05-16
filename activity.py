@@ -149,7 +149,7 @@ class Activity(sugar.activity.activity.Activity):
         self.h.pack1(self.tree)
         self.box.append_page(self.h, gtk.Label("Editor"))
 
-        if True:
+        if False:
             self.socket = gtk.Socket()
             self.socket.show()
             self.h.pack2(self.socket)
