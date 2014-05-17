@@ -18,9 +18,11 @@ import __main__
 
 from sugar.graphics import style
 
-banner = """GTK Interactive Python Console
-%s
+banner = """Taller de Artesano de Videojuegos
+Python %s
 """ % sys.version
+
+banner += "Explore self.game.\n"
 
 class Completer:
   """

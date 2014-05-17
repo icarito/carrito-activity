@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, sys
 
 from gettext import gettext as _
 import gtk
@@ -13,6 +13,7 @@ import sugargame2.canvas
 import spyral
 
 import logging
+import traceback
 
 from sugar.graphics import style
 from sugar.graphics.toolbarbox import ToolbarBox
@@ -40,6 +41,9 @@ import game.carrito
 
 JUEGO=game.carrito
 
+def is_xo():
+    return os.path.exists('/sys/power/olpc-pm')
+
 class Activity(sugar.activity.activity.Activity):
     def __init__(self, handle):
         super(Activity, self).__init__(handle)
@@ -56,7 +60,7 @@ class Activity(sugar.activity.activity.Activity):
         self.box.set_show_tabs(False)
 
         self.splash = gtk.Image()
-        self.splash.set_from_file("images/splash_neko.png")
+        self.splash.set_from_file("images/splash.png")
         self.splash.show()
         eb = gtk.EventBox()
         eb.add(self.splash)
@@ -89,8 +93,8 @@ class Activity(sugar.activity.activity.Activity):
         if scene:
             scene.redraw()
 
-    def alert(self, title=None, text=None):
-        alert = NotifyAlert(5)
+    def alert(self, title=None, text=None, delay=5):
+        alert = NotifyAlert(delay)
         alert.props.title = title
         alert.props.msg = text
         self.add_alert(alert)
@@ -149,7 +153,8 @@ class Activity(sugar.activity.activity.Activity):
         self.h.pack1(self.tree)
         self.box.append_page(self.h, gtk.Label("Editor"))
 
-        if False:
+        if os.path.isfile("/usr/bin/gvim"):
+            # Si podemos, lo hacemos
             self.socket = gtk.Socket()
             self.socket.show()
             self.h.pack2(self.socket)
@@ -245,10 +250,18 @@ class Activity(sugar.activity.activity.Activity):
 
     def run_game(self):
         spyral.director.init((0,0), fullscreen=False, max_fps=30)
-        self.game = JUEGO.Juego(self, callback=self.game_ready)
+        self.game = JUEGO.Inicio(activity=self)
         self.box.connect("switch-page", self.redraw)
         spyral.director.push(self.game)
-        spyral.director.run(sugar = True)
+        self.start()
+
+    def start(self):
+        try:
+            spyral.director.run(sugar = True)
+        except AttributeError as detail:
+            detail2 = traceback.format_exc()
+            self.box.set_page(0)
+            self.alert( detail2, "Spyral se ha detenido abruptamente.", 60)
 
     def show_game(self, widget):
         self.box.set_page(1)
@@ -269,9 +282,9 @@ class Activity(sugar.activity.activity.Activity):
         watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
         self.window.set_cursor(watch)
         JUEGO = reload(JUEGO)
-        self.game = JUEGO.Juego(self, callback=self.game_ready)
+        self.game = JUEGO.Inicio(activity=self)
         spyral.director.replace(self.game)
-        spyral.director.run(sugar = True)
+        self.start()
 
     def game_ready(self, widget = None):
         self.game_button.set_active(True)
@@ -288,8 +301,12 @@ class Activity(sugar.activity.activity.Activity):
     def can_close(self):
         self.editor.close()
         self.box.set_page(0)
-        pygame.quit()
-        return True
+        try:
+            spyral.director.quit()
+        except spyral.exceptions.GameEndException:
+            pass
+        finally:
+            return True
 
     def toggle_console(self, e):
         if self._interpreter.props.visible:
@@ -403,7 +420,8 @@ class VimSourceView(VimWrapper):
         if path:
             if not os.path.isdir(path):
                 self.sendKeys(":e %s<CR>" % path)
-                self.fix_fonts()
+                if is_xo:
+                    self.fix_fonts()
 
     def fix_fonts(self):
         font = "Monospace\\ " + str(int(10/style.ZOOM_FACTOR))

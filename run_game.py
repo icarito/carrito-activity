@@ -1,6 +1,7 @@
-### CISC374 Test Launcher
+### Launcher
 
 __author__ = "Robert Deaton"
+__contributor__ = "Sebastian Silva"
 __version__ = "0.3"
 __license__ = "MIT"
 

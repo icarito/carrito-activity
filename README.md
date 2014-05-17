@@ -1,3 +1,15 @@
+Carrito: Consenso en 8-bits
+===========================
+
+Is a decision taking game. At any time, drivers can reach consensus or end the game.
+Consensus is reached when all 8-bits are aligned.
+
+Controls
+========
+Player 1:   Use Arrow Keys
+Player 2:   WASD
+
+
 Videogame Artisan Workshop
 ==========================
 

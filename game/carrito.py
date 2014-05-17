@@ -26,7 +26,7 @@ class Interruptor(spyral.Sprite):
     def lejos_de_otros(self, x=None, y=None):
         if not y or not x:
             x, y = random.randint(50, self.scene.width-100), random.randint(50, self.scene.height-100)
-        for i in self.scene.i:
+        for i in self.scene.interruptores:
             if spyral.Vec2D(x,y).distance(i.pos) < self.size.get_length():
                 return self.lejos_de_otros()
         return x,y
@@ -86,6 +86,7 @@ class Carrito(spyral.Sprite):
         spyral.event.register("Carrito.angle.animation.end", self.fin_anim)
         spyral.event.register("Carrito.pos.animation.end", self.fin_mov)
         spyral.event.register("Carrito.vel.animation.end", self.fin_fren)
+        spyral.event.register("Carrito.image.animation.end", self.fin_explosion)
 
     def izquierda(self, event):
         if self.moviendo and not self.girando:
@@ -146,6 +147,12 @@ class Carrito(spyral.Sprite):
         if sprite==self:
             self.frenando = False
 
+    def fin_explosion(self, sprite):
+        if sprite==self:
+            self.kill()
+            self.scene.fin(0)
+
+
     def chequea_choque(self, event):
         if self.x > self.scene.width:
             self.x = 0
@@ -155,7 +162,7 @@ class Carrito(spyral.Sprite):
             self.x = self.scene.width
         if self.y < 0:
             self.y = self.scene.height
-        for i in self.scene.i:
+        for i in self.scene.interruptores:
             if self.collide_sprite(i):
                 if not i.player==self.player:
                     spyral.event.queue("carrito.choca", spyral.Event(sprite=i, player=self.player))
@@ -169,23 +176,33 @@ class Juego(spyral.Scene):
 
         self.layers = ["fondo", "objetos", "carros"]
 
+        self.explotando = False
+
         self.rojo = Carrito(self, 1)
         self.verde = Carrito(self, 2)
 
         self.boom = pygame.mixer.Sound('sounds/punch.wav')
 
-        self.i = []
+        self.interruptores = []
         for i in range(0,4):
-            self.i.append(Interruptor(self, 1))
+            self.interruptores.append(Interruptor(self, 1))
         for i in range(0,4):
-            self.i.append(Interruptor(self, 2))
+            self.interruptores.append(Interruptor(self, 2))
 
         spyral.event.register("director.update", self.chequea_choque)
         spyral.event.register("system.quit", spyral.director.pop)
         spyral.event.register("carrito.choca", self.puntaje)
         spyral.event.register("carrito.gana", self.fin)
 
+        secuencia = []
+        for i in range(0, 7):
+            secuencia.append( spyral.Image("images/boom-%i.png" % i ) )
+
+        self.explosion = spyral.Animation('image', spyral.easing.Iterate( secuencia ), 
+                                        duration = 1)
+
         if activity:
+            activity.game_button.set_active(True)
             activity.box.next_page()
             activity._pygamecanvas.grab_focus()
             activity.window.set_cursor(None)
@@ -194,12 +211,16 @@ class Juego(spyral.Scene):
     def chequea_choque(self):
         if self.verde.collide_sprite(self.rojo):
             self.boom.play()
-            self.verde.vel = 0
-            self.rojo.vel = 0
+            if not self.explotando:
+                self.verde.frena(None)
+                self.rojo.frena(None)
+                self.verde.animate(self.explosion)
+                self.rojo.animate(self.explosion)
+                self.explotando = True
 
     def puntaje(self, sprite, player):
         puntaje1, puntaje2 = 0, 0
-        for i in self.i:
+        for i in self.interruptores:
             if i.player==1:
                 puntaje1+=1
             elif i.player==2:
@@ -215,17 +236,65 @@ class Juego(spyral.Scene):
         final = Final(SIZE=self.size, player=player)
         spyral.director.replace(final)
 
+class Inicio(spyral.Scene):
+    def __init__(self, SIZE=None, activity=None, *args, **kwargs):
+        spyral.Scene.__init__(self, SIZE)
+        self.background = spyral.Image(size=self.size).fill((255,255,255))
+
+        self.title = spyral.Sprite(self)
+        self.title.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 105).render("Consenso en 8-bits")
+        self.title.anchor = "midbottom"
+        self.title.pos = spyral.Vec2D(self.size)/2
+
+        #anim = spyral.Animation("visible", spyral.easing.Iterate([True,False]), duration=0.5, loop=True)
+        #self.title.animate(anim) 
+
+        self.subtitle = spyral.Sprite(self)
+        self.subtitle.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 75).render("press space")
+        self.subtitle.anchor = "midtop"
+        self.subtitle.pos = spyral.Vec2D(self.size)/2
+
+        self.player = Carrito(self, 1)
+        self.player.pos = 150, 150
+        self.player.vel = 30
+        self.player.scale = 3
+
+        self.player = Carrito(self, 2)
+        self.player.pos = self.width-150, self.height-150
+        self.player.vel = 30
+        self.player.scale = 3
+        self.angle = math.pi
+        self.interruptores = []
+
+        spyral.event.register("input.keyboard.down.space", self.continuar)
+        spyral.event.register("system.quit", spyral.director.pop)
+
+        if activity:
+            activity.box.next_page()
+            activity._pygamecanvas.grab_focus()
+            activity.window.set_cursor(None)
+            self.activity = activity
+
+    def continuar(self):
+        juego = Juego(activity=None, SIZE=self.size)
+        spyral.director.replace(juego)
 
 class Final(spyral.Scene):
     def __init__(self, SIZE, player):
         spyral.Scene.__init__(self, SIZE)
         self.background = spyral.Image(size=self.size).fill((255,255,255))
 
-        self.player = Carrito(self, player)
-        self.player.pos = spyral.Vec2D(self.size)/2
-        self.player.vel = 0
-        self.player.scale = 3
-        self.i = []
+        if player:
+            self.player = Carrito(self, player)
+            self.player.pos = spyral.Vec2D(self.size)/2
+            self.player.vel = 0
+            self.player.scale = 3
+            self.interruptores = []
+        else:
+            self.player = spyral.Sprite(self)
+            self.player.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 55).render("game over")
+            self.player.anchor = "center"
+            self.player.pos = spyral.Vec2D(self.size)/2
 
         self.aplauso = pygame.mixer.Sound('sounds/applause.wav')
         self.aplauso.play()
@@ -233,7 +302,9 @@ class Final(spyral.Scene):
         anim = spyral.Animation("scale", spyral.easing.Sine(1), shift=2)
         self.player.animate(anim + anim + anim + anim + anim)
 
+        spyral.event.register("Sprite.scale.animation.end", self.continuar)
         spyral.event.register("Carrito.scale.animation.end", self.continuar)
+        spyral.event.register("system.quit", spyral.director.pop)
 
     def continuar(self):
         juego = Juego(activity=None, SIZE=self.size)
