@@ -62,18 +62,28 @@ class Carrito(spyral.Sprite):
         self.player = player
         if player==1:
             self.x, self.y = spyral.Vec2D(scene.size)/8.0
-            spyral.event.register("input.keyboard.down.down", self.frena)
-            spyral.event.register("input.keyboard.down.up", self.avanza)
-            spyral.event.register("input.keyboard.down.left", self.izquierda)
-            spyral.event.register("input.keyboard.down.right", self.derecha)
+            spyral.event.register("input.keyboard.down.s", self.frena)
+            spyral.event.register("input.keyboard.down.w", self.avanza)
+            spyral.event.register("input.keyboard.down.a", self.izquierda)
+            spyral.event.register("input.keyboard.down.d", self.derecha)            
+            # game keys
+            spyral.event.register("input.keyboard.down.keypad_2", self.frena)
+            spyral.event.register("input.keyboard.down.keypad_8", self.avanza)
+            spyral.event.register("input.keyboard.down.keypad_4", self.izquierda)
+            spyral.event.register("input.keyboard.down.keypad_6", self.derecha)
             self.image = spyral.Image("images/etoys-car.png")
             self.angle = 0
         elif player==2:
             self.x, self.y = spyral.Vec2D(scene.size)*0.875
-            spyral.event.register("input.keyboard.down.s", self.frena)
-            spyral.event.register("input.keyboard.down.w", self.avanza)
-            spyral.event.register("input.keyboard.down.a", self.izquierda)
-            spyral.event.register("input.keyboard.down.d", self.derecha)
+            spyral.event.register("input.keyboard.down.down", self.frena)
+            spyral.event.register("input.keyboard.down.up", self.avanza)
+            spyral.event.register("input.keyboard.down.left", self.izquierda)
+            spyral.event.register("input.keyboard.down.right", self.derecha)
+            # game keys
+            spyral.event.register("input.keyboard.down.keypad_3", self.frena)
+            spyral.event.register("input.keyboard.down.keypad_9", self.avanza)
+            spyral.event.register("input.keyboard.down.keypad_7", self.izquierda)
+            spyral.event.register("input.keyboard.down.keypad_1", self.derecha)
             self.image = spyral.Image("images/etoys-car-green.png")
             self.angle = math.pi
 
@@ -250,7 +260,7 @@ class Inicio(spyral.Scene):
         #self.title.animate(anim) 
 
         self.subtitle = spyral.Sprite(self)
-        self.subtitle.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 75).render("press space")
+        self.subtitle.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 75).render("presiona espacio")
         self.subtitle.anchor = "midtop"
         self.subtitle.pos = spyral.Vec2D(self.size)/2
 
@@ -267,6 +277,7 @@ class Inicio(spyral.Scene):
         self.interruptores = []
 
         spyral.event.register("input.keyboard.down.space", self.continuar)
+        spyral.event.register("input.keyboard.down.*", self.mostrar)
         spyral.event.register("system.quit", spyral.director.pop)
 
         if activity:
@@ -274,6 +285,10 @@ class Inicio(spyral.Scene):
             activity._pygamecanvas.grab_focus()
             activity.window.set_cursor(None)
             self.activity = activity
+
+    def mostrar(self, event):
+        print event.key
+        print event
 
     def continuar(self):
         juego = Juego(activity=None, SIZE=self.size)
@@ -286,13 +301,23 @@ class Final(spyral.Scene):
 
         if player:
             self.player = Carrito(self, player)
-            self.player.pos = spyral.Vec2D(self.size)/2
+            self.player.pos = spyral.Vec2D(self.width/2, self.height/3)
             self.player.vel = 0
             self.player.scale = 3
             self.interruptores = []
+
+            if player==1:
+                texto = "gana rojo"
+            elif player==2:
+                texto = "gana verde"
+            self.nota = spyral.Sprite(self)
+            self.nota.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 105).render(texto)
+            self.nota.anchor = "center"
+            self.nota.pos = spyral.Vec2D(self.width/2, 2*self.height/3)
+            
         else:
             self.player = spyral.Sprite(self)
-            self.player.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 55).render("game over")
+            self.player.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 55).render("no hay consenso")
             self.player.anchor = "center"
             self.player.pos = spyral.Vec2D(self.size)/2
 

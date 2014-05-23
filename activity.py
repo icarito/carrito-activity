@@ -60,7 +60,7 @@ class Activity(sugar.activity.activity.Activity):
         self.box.set_show_tabs(False)
 
         self.splash = gtk.Image()
-        self.splash.set_from_file("images/splash.png")
+        self.splash.set_from_file("images/splash_carrito.png")
         self.splash.show()
         eb = gtk.EventBox()
         eb.add(self.splash)
@@ -153,7 +153,7 @@ class Activity(sugar.activity.activity.Activity):
         self.h.pack1(self.tree)
         self.box.append_page(self.h, gtk.Label("Editor"))
 
-        if os.path.isfile("/usr/bin/gvim"):
+        if False: #os.path.isfile("/usr/bin/gvim"):
             # Si podemos, lo hacemos
             self.socket = gtk.Socket()
             self.socket.show()
