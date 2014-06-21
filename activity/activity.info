@@ -1,6 +1,6 @@
 [Activity]
 name = Carrito
-activity_version = 3
+activity_version = 4
 bundle_id = org.somosazucar.Carrito
 icon = carrito 
 exec = sugar-activity activity.Activity

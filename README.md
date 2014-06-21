@@ -33,24 +33,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Content:
-
-    Wikiquotes: LaoTse, Confucio, Proverbios Populares.
-
 Credits of assets:
 
     Switch designed by John Caserta from the Noun Project
     Light Switch designed by Nadir Balcikli from the Noun Project
     Lever designed by Nick Abrams from the Noun Project
-    Man by Sergi Delgado from The Noun Project
-    Cat designed by Martin LEBRETON from the Noun Project
-    Paw designed by Ben Hsu from the Noun Project
-    Creative Commons – Attribution (CC BY 3.0)
     Creative Commons – Attribution (CC BY 3.0) 
+    and of course etoys car by etoys authors
     
-Graphics from Wikipedia
-http://en.wikipedia.org/wiki/File:Hangman-0.png set done by User:Demi on English Wikipedia
-
 Sounds:
 applause.wav from Libreoffice
 punch.wav from pygame exaples

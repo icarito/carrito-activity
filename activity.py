@@ -60,7 +60,11 @@ class Activity(sugar.activity.activity.Activity):
         self.box.set_show_tabs(False)
 
         self.splash = gtk.Image()
-        self.splash.set_from_file("images/splash_carrito.png")
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/splash_carrito.png")
+        screen = self.window.get_screen()
+        width, height = screen.get_width(), screen.get_height() - style.GRID_CELL_SIZE
+        pixbuf = pixbuf.scale_simple(width, height, gtk.gdk.INTERP_BILINEAR)
+        self.splash.set_from_pixbuf(pixbuf)
         self.splash.show()
         eb = gtk.EventBox()
         eb.add(self.splash)
@@ -97,6 +101,7 @@ class Activity(sugar.activity.activity.Activity):
         alert = NotifyAlert(delay)
         alert.props.title = title
         alert.props.msg = text
+        print text
         self.add_alert(alert)
         alert.connect('response', self._alert_ok)
         alert.show()
@@ -256,12 +261,12 @@ class Activity(sugar.activity.activity.Activity):
         self.start()
 
     def start(self):
-        try:
-            spyral.director.run(sugar = True)
-        except AttributeError as detail:
-            detail2 = traceback.format_exc()
-            self.box.set_page(0)
-            self.alert( detail2, "Spyral se ha detenido abruptamente.", 60)
+        #try:
+        spyral.director.run(sugar = True)
+        #except AttributeError as detail:
+        #    detail2 = traceback.format_exc()
+        #    self.box.set_page(0)
+        #    self.alert( detail2, "Spyral se ha detenido abruptamente.", 60)
 
     def show_game(self, widget):
         self.box.set_page(1)
