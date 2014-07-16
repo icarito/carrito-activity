@@ -12,7 +12,8 @@ class Creditos(spyral.Scene):
 
         spyral.event.register("input.keyboard.down.*", self.leave)
         spyral.event.register("input.mouse.down.*", self.leave)
-        #car = LogoSprite(self, "images/etoys-car.png")
+        car = LogoSprite(self, "images/etoys-car.png")
+        car.angle = math.pi/2
         #center = (self.width/4, self.height/4)
         #angle = math.pi/2
         #animacion = spyral.Animation("pos", spyral.easing.Arc(radius=50, center=center), duration=10, loop=True) & \
@@ -25,13 +26,18 @@ class Creditos(spyral.Scene):
                 MultiTexto(self, u"Carrito: Consenso en 8 bits", style="title"),
                 MultiTexto(self, u"Cómo ponernos de acuerdo y aprender a respetarnos."),
                 Espacio(self),
-                LogoSprite(self, "images/etoys-car.png"),
+                car,
                 MultiTexto(self, u"imagen de carrito tomada de Etoys, Apache 2.0 o MIT."),
                 MultiTexto(self, u"<http://wiki.laptop.org/go/Etoys>", style="small"),
                 Espacio(self),
                 LogoSprite(self, "images/interruptor.png"),
                 MultiTexto(self, u"Switch by John Caserta, Noun Project, CC-BY 3.0"),
                 MultiTexto(self, u"<http://thenounproject.com/term/switch/36911/>", style="small"),
+                Espacio(self),
+                LogoSprite(self, "images/explosion.png"),
+                MultiTexto(self, u"animación de explosión tomada de Pilas Engine, LGPLv3.0"),
+                MultiTexto(self, u"© Hugo Ruscitti"),
+                MultiTexto(self, u"<http://pilas-engine.com.ar/>", style="small"),
                 Espacio(self),
                 MultiTexto(self, u"sonido \"BonusCube\", CC-0 Public Domain by RaoulWB"),
                 MultiTexto(self, u"<http://opengameart.org/content/platform-small-sound-effect-pack>", style="small"),
