@@ -14,6 +14,7 @@ import spyral
 
 import logging
 import traceback
+import helpbutton
 
 from sugar.graphics import style
 from sugar.graphics.toolbarbox import ToolbarBox
@@ -38,6 +39,7 @@ except ImportError:
 from pango import FontDescription
 
 import game.carrito
+import game.credits
 
 JUEGO=game.carrito
 
@@ -86,10 +88,12 @@ class Activity(sugar.activity.activity.Activity):
 
         gobject.timeout_add(300, self.pump)
         gobject.timeout_add(2000, self.init_interpreter)
-        gobject.timeout_add(1000, self.build_editor)
+        #gobject.timeout_add(1000, self.build_editor)
         gobject.timeout_add(1500, self.check_modified)
 
         self.build_toolbar()    
+        self.credits = None
+        self.editor = None
         self._pygamecanvas.run_pygame(self.run_game)
 
     def redraw(self, widget=None, b=None, c=None):
@@ -215,17 +219,6 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(button, -1)
         button.show()
 
-        separator = gtk.SeparatorToolItem()
-        toolbar_box.toolbar.insert(separator, -1)
-        separator.show()
-
-        self.editor_button = ToolButton('sources')
-        self.editor_button.set_tooltip(_('Consola'))
-        self.editor_button.accelerator = "<Ctrl>grave"
-        self.editor_button.connect('clicked', self.toggle_console)
-        toolbar_box.toolbar.insert(self.editor_button, -1)
-        self.editor_button.show()
-
         self.save_button = ToolButton('dialog-ok')
         self.save_button.set_tooltip(_('Guardar'))
         self.save_button.accelerator = "<Ctrl>s"
@@ -234,6 +227,10 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(self.save_button, -1)
         self.save_button.show()
 
+        separator = gtk.SeparatorToolItem()
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
+
         button = ToolButton('system-restart')
         button.set_tooltip(_('Reiniciar juego'))
         button.accelerator = "<Alt><Shift>r"
@@ -241,8 +238,30 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(button, -1)
         button.show()
 
-        # Blank space (separator) and Stop button at the end:
+        self.editor_button = ToolButton('sources')
+        self.editor_button.set_tooltip(_('Consola'))
+        self.editor_button.accelerator = "<Ctrl>grave"
+        self.editor_button.connect('clicked', self.toggle_console)
+        toolbar_box.toolbar.insert(self.editor_button, -1)
+        self.editor_button.show()
 
+        separator = gtk.SeparatorToolItem()
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
+
+        button = helpbutton.HelpButton(self)
+        toolbar_box.toolbar.insert(button, -1)
+        button.show()
+
+        button = ToolButton()
+        button.props.icon_name = 'activity-about'
+        button.set_tooltip(_('Acerca de'))
+        button.accelerator = "<Ctrl>i"
+        button.connect('clicked', self.run_credits)
+        toolbar_box.toolbar.insert(button, -1)
+        button.show()
+
+        # Blank space (separator) and Stop button at the end:
         separator = gtk.SeparatorToolItem()
         separator.props.draw = False
         separator.set_expand(True)
@@ -260,6 +279,11 @@ class Activity(sugar.activity.activity.Activity):
         spyral.director.push(self.game)
         self.start()
 
+    def run_credits(self, widget):
+        if not (spyral.director.get_scene()==self.credits):
+            self.credits = game.credits.Creditos(self.game.size)
+            spyral.director.push(self.credits)
+
     def start(self):
         #try:
         spyral.director.run(sugar = True)
@@ -273,6 +297,8 @@ class Activity(sugar.activity.activity.Activity):
         self.redraw()
 
     def show_editor(self, widget):
+        if not self.editor:
+            self.build_editor()
         self.box.set_page(2)
         self.redraw()
 
@@ -304,7 +330,8 @@ class Activity(sugar.activity.activity.Activity):
         pass
 
     def can_close(self):
-        self.editor.close()
+        if self.editor:
+            self.editor.close()
         self.box.set_page(0)
         try:
             spyral.director.quit()

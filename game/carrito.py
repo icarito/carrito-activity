@@ -271,42 +271,6 @@ class Inicio(spyral.Scene):
         self.subtitle.pos = spyral.Vec2D(self.size)/2
         self.subtitle.layer = "frente"
 
-        self.subtitle2 = spyral.Sprite(self)
-        self.subtitle2.image = spyral.Font("fonts/SFDigitalReadout-Medium.ttf", 75).render("encuentra el consenso")
-        self.subtitle2.anchor = "midtop"
-        self.subtitle2.pos = spyral.Vec2D(self.size)/2 + (0,125)
-        self.subtitle2.layer = "frente"
-
-        self.taller = spyral.Sprite(self)
-        self.taller.image = spyral.Image(filename="images/taller.png")
-        self.taller.pos = (self.width/2, self.height/5)
-        self.taller.anchor = "center"
-        self.subtitle.layer = "frente"
-
-        self.taller = spyral.Sprite(self)
-        self.taller.image = spyral.Image(filename="images/logo_labs.png")
-        self.taller.pos = (self.width-self.taller.image.width-20, 20)
-        self.taller.layer = "fondo"
-
-        self.taller = spyral.Sprite(self)
-        self.taller.image = spyral.Image(filename="images/transformando.png")
-        self.taller.pos = (0, self.height-self.taller.image.height)
-        self.taller.layer = "fondo"
-
-        self.flechitas = spyral.Sprite(self)
-        self.flechitas.image = spyral.Image(filename="images/flechitas.png")
-        self.flechitas.anchor = "midtop"
-        self.flechitas.layer = "frente"
-        self.flechitas.scale = 2.3
-        self.flechitas.anchor = "center"
-
-        self.wasd = spyral.Sprite(self)
-        self.wasd.image = spyral.Image(filename="images/wasd.png")
-        self.wasd.anchor = "midtop"
-        self.wasd.layer = "frente"
-        self.wasd.scale = 2
-        self.wasd.anchor = "center"
-
         self.player1 = Carrito(self, 1)
         self.player1.pos = 150, 150
         self.player1.vel = 30
@@ -324,8 +288,6 @@ class Inicio(spyral.Scene):
 
         spyral.event.register("input.keyboard.down.space", self.continuar)
         spyral.event.register("system.quit", spyral.director.pop)
-        spyral.event.register("director.update", self.follow)
-        spyral.event.register("director.scene.enter", self.blink)
 
         if activity:
             activity.box.next_page()
@@ -336,16 +298,6 @@ class Inicio(spyral.Scene):
     def continuar(self):
         juego = Juego(activity=None, SIZE=self.size)
         spyral.director.replace(juego)
-
-    def blink(self):
-        anim = spyral.Animation("visible", spyral.easing.Iterate([True,False]), duration=1, loop=True)
-        self.subtitle.animate(anim) 
-
-    def follow(self):
-        self.flechitas.pos = self.player2.pos - spyral.Vec2D(0,0).from_polar(220,self.player2.angle + math.pi)
-        self.flechitas.angle = self.player2.angle - math.pi/2
-        self.wasd.pos = self.player1.pos - spyral.Vec2D(0,0).from_polar(200,self.player1.angle + math.pi)
-        self.wasd.angle = self.player1.angle - math.pi/2
 
 class Final(spyral.Scene):
     def __init__(self, SIZE, player):
